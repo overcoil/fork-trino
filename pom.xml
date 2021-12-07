@@ -109,6 +109,8 @@
         <module>plugin/trino-blackhole</module>
         <module>plugin/trino-cassandra</module>
         <module>plugin/trino-clickhouse</module>
+        <module>plugin/trino-delta</module>
+        <module>plugin/trino-delta-driver</module>
         <module>plugin/trino-druid</module>
         <module>plugin/trino-elasticsearch</module>
         <module>plugin/trino-example-http</module>
@@ -476,6 +478,13 @@
                 <groupId>io.trino</groupId>
                 <artifactId>trino-testing-kafka</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <!-- TODO: variant build -->
+            <dependency>
+                <groupId>io.trino.hadoop</groupId>
+                <artifactId>hadoop-apache</artifactId>
+                <version>3.2.0-11-delta</version>
             </dependency>
 
             <dependency>
@@ -1507,6 +1516,26 @@
                 </exclusions>
             </dependency>
 
+            <dependency>
+                <groupId>io.delta</groupId>
+                <artifactId>delta-standalone_2.12</artifactId>
+                <version>0.2.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.trino.delta</groupId>
+                <artifactId>trino-delta-driver</artifactId>
+                <classifier>shaded</classifier>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.trino</groupId>
+                <artifactId>trino-delta</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- force newer version to be used for dependencies -->
             <dependency>
                 <groupId>org.sonatype.aether</groupId>
                 <artifactId>aether-api</artifactId>
