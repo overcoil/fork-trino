@@ -11,21 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.delta;
+package io.trino.delta;
 
-import io.prestosql.spi.Page;
-import io.prestosql.spi.PrestoException;
-import io.prestosql.spi.block.Block;
-import io.prestosql.spi.block.RunLengthEncodedBlock;
-import io.prestosql.spi.connector.ConnectorPageSource;
+import io.trino.spi.Page;
+import io.trino.spi.TrinoException;
+import io.trino.spi.block.Block;
+import io.trino.spi.block.RunLengthEncodedBlock;
+import io.trino.spi.connector.ConnectorPageSource;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static io.prestosql.delta.DeltaColumnHandle.ColumnType.PARTITION;
-import static io.prestosql.delta.DeltaErrorCode.DELTA_READ_DATA_ERROR;
+import static io.trino.delta.DeltaColumnHandle.ColumnType.PARTITION;
+import static io.trino.delta.DeltaErrorCode.DELTA_READ_DATA_ERROR;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -82,13 +82,13 @@ public class DeltaPageSource
             }
             return new Page(positionCount, blocksWithPartitionColumns);
         }
-        catch (PrestoException e) {
+        catch (TrinoException e) {
             closeWithSuppression(e);
             throw e; // already properly handled exception - throw without any additional info
         }
         catch (RuntimeException e) {
             closeWithSuppression(e);
-            throw new PrestoException(DELTA_READ_DATA_ERROR, e);
+            throw new TrinoException(DELTA_READ_DATA_ERROR, e);
         }
     }
 

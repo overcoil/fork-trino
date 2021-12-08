@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.delta;
+package io.trino.delta;
 
 import com.google.common.base.Joiner;
 import org.testng.annotations.Test;

@@ -11,9 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.delta;
+package io.trino.delta;
 
-import io.prestosql.spi.PrestoException;
+import io.trino.spi.TrinoException;
 import org.testng.annotations.Test;
 
 import java.time.LocalDateTime;
@@ -88,7 +88,7 @@ public class TestDeltaTableName
             DeltaTableName.from(inputTableName);
             fail("expected the above call to fail");
         }
-        catch (PrestoException ex) {
+        catch (TrinoException ex) {
             assertTrue(ex.getMessage().contains(expErrorMessage), ex.getMessage());
         }
     }

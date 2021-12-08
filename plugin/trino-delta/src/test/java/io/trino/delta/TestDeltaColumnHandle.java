@@ -11,19 +11,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.delta;
+package io.trino.delta;
 
 import com.google.common.collect.ImmutableMap;
 import io.airlift.json.JsonCodec;
 import io.airlift.json.JsonCodecFactory;
 import io.airlift.json.ObjectMapperProvider;
-import io.prestosql.spi.type.TypeSignature;
-import io.prestosql.type.TypeSignatureDeserializer;
+import io.trino.spi.type.TypeSignature;
+import io.trino.type.TypeSignatureDeserializer;
 import org.testng.annotations.Test;
 
-import static io.prestosql.delta.DeltaColumnHandle.ColumnType.PARTITION;
-import static io.prestosql.delta.DeltaColumnHandle.ColumnType.REGULAR;
-import static io.prestosql.spi.type.DoubleType.DOUBLE;
+import static io.trino.delta.DeltaColumnHandle.ColumnType.PARTITION;
+import static io.trino.delta.DeltaColumnHandle.ColumnType.REGULAR;
+import static io.trino.spi.type.DoubleType.DOUBLE;
 import static org.testng.Assert.assertEquals;
 
 /**

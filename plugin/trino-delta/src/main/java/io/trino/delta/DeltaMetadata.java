@@ -11,33 +11,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.delta;
+package io.trino.delta;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airlift.log.Logger;
-import io.prestosql.plugin.hive.authentication.HiveIdentity;
-import io.prestosql.plugin.hive.metastore.HiveMetastore;
-import io.prestosql.plugin.hive.metastore.Storage;
-import io.prestosql.plugin.hive.metastore.Table;
-import io.prestosql.spi.connector.ColumnHandle;
-import io.prestosql.spi.connector.ColumnMetadata;
-import io.prestosql.spi.connector.ConnectorMetadata;
-import io.prestosql.spi.connector.ConnectorSession;
-import io.prestosql.spi.connector.ConnectorTableHandle;
-import io.prestosql.spi.connector.ConnectorTableLayout;
-import io.prestosql.spi.connector.ConnectorTableLayoutHandle;
-import io.prestosql.spi.connector.ConnectorTableMetadata;
-import io.prestosql.spi.connector.ConnectorTableProperties;
-import io.prestosql.spi.connector.Constraint;
-import io.prestosql.spi.connector.ConstraintApplicationResult;
-import io.prestosql.spi.connector.ProjectionApplicationResult;
-import io.prestosql.spi.connector.SchemaTableName;
-import io.prestosql.spi.connector.SchemaTablePrefix;
-import io.prestosql.spi.expression.ConnectorExpression;
-import io.prestosql.spi.predicate.TupleDomain;
-import io.prestosql.spi.type.TypeManager;
+import io.trino.plugin.hive.authentication.HiveIdentity;
+import io.trino.plugin.hive.metastore.HiveMetastore;
+import io.trino.plugin.hive.metastore.Storage;
+import io.trino.plugin.hive.metastore.Table;
+import io.trino.spi.connector.ColumnHandle;
+import io.trino.spi.connector.ColumnMetadata;
+import io.trino.spi.connector.ConnectorMetadata;
+import io.trino.spi.connector.ConnectorSession;
+import io.trino.spi.connector.ConnectorTableHandle;
+import io.trino.spi.connector.ConnectorTableLayout;
+import io.trino.spi.connector.ConnectorTableLayoutHandle;
+import io.trino.spi.connector.ConnectorTableMetadata;
+import io.trino.spi.connector.ConnectorTableProperties;
+import io.trino.spi.connector.Constraint;
+import io.trino.spi.connector.ConstraintApplicationResult;
+import io.trino.spi.connector.ProjectionApplicationResult;
+import io.trino.spi.connector.SchemaTableName;
+import io.trino.spi.connector.SchemaTablePrefix;
+import io.trino.spi.expression.ConnectorExpression;
+import io.trino.spi.predicate.TupleDomain;
+import io.trino.spi.type.TypeManager;
 
 import javax.inject.Inject;
 
@@ -49,11 +49,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static io.prestosql.delta.DeltaColumnHandle.ColumnType.PARTITION;
-import static io.prestosql.delta.DeltaColumnHandle.ColumnType.REGULAR;
-import static io.prestosql.delta.DeltaExpressionUtils.splitPredicate;
-import static io.prestosql.delta.DeltaSessionProperties.isFilterPushdownEnabled;
-import static io.prestosql.delta.DeltaSessionProperties.isProjectionPushdownEnabled;
+import static io.trino.delta.DeltaColumnHandle.ColumnType.PARTITION;
+import static io.trino.delta.DeltaColumnHandle.ColumnType.REGULAR;
+import static io.trino.delta.DeltaExpressionUtils.splitPredicate;
+import static io.trino.delta.DeltaSessionProperties.isFilterPushdownEnabled;
+import static io.trino.delta.DeltaSessionProperties.isProjectionPushdownEnabled;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
 
@@ -188,7 +188,9 @@ public class DeltaMetadata
 
         return Optional.of(new ConstraintApplicationResult<>(
                 newDeltaTableHandle,
-                unenforcedPredicate));
+                unenforcedPredicate,
+                // TODO: new parameter precalculateStatistics introduced in 358
+                true));
     }
 
     @Override

@@ -11,18 +11,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.delta;
+package io.trino.delta;
 
 import io.delta.standalone.DeltaLog;
 import io.delta.standalone.Snapshot;
 import io.delta.standalone.actions.AddFile;
 import io.delta.standalone.actions.Metadata;
-import io.prestosql.plugin.hive.HdfsEnvironment;
-import io.prestosql.plugin.hive.HdfsEnvironment.HdfsContext;
-import io.prestosql.spi.PrestoException;
-import io.prestosql.spi.connector.ConnectorSession;
-import io.prestosql.spi.connector.SchemaTableName;
-import io.prestosql.spi.type.TypeSignature;
+import io.trino.plugin.hive.HdfsEnvironment;
+import io.trino.plugin.hive.HdfsEnvironment.HdfsContext;
+import io.trino.spi.TrinoException;
+import io.trino.spi.connector.ConnectorSession;
+import io.trino.spi.connector.SchemaTableName;
+import io.trino.spi.type.TypeSignature;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -39,10 +39,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static io.prestosql.delta.DeltaErrorCode.DELTA_UNSUPPORTED_DATA_FORMAT;
-import static io.prestosql.delta.DeltaTypeUtils.convertDeltaDataTypePrestoDataType;
-import static io.prestosql.spi.StandardErrorCode.GENERIC_INTERNAL_ERROR;
-import static io.prestosql.spi.StandardErrorCode.NOT_FOUND;
+import static io.trino.delta.DeltaErrorCode.DELTA_UNSUPPORTED_DATA_FORMAT;
+import static io.trino.delta.DeltaTypeUtils.convertDeltaDataTypeTrinoDataType;
+import static io.trino.spi.StandardErrorCode.GENERIC_INTERNAL_ERROR;
+import static io.trino.spi.StandardErrorCode.NOT_FOUND;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
@@ -91,7 +91,7 @@ public class DeltaClient
                 snapshot = deltaLog.get().getSnapshotForVersionAsOf(snapshotId.get());
             }
             catch (IllegalArgumentException iae) {
-                throw new PrestoException(
+                throw new TrinoException(
                         NOT_FOUND,
                         format("Snapshot version %d does not exist in Delta table '%s'.", snapshotId.get(), schemaTableName),
                         iae);
@@ -102,7 +102,7 @@ public class DeltaClient
                 snapshot = deltaLog.get().getSnapshotForTimestampAsOf(snapshotAsOfTimestampMillis.get());
             }
             catch (IllegalArgumentException iae) {
-                throw new PrestoException(
+                throw new TrinoException(
                         NOT_FOUND,
                         format(
                                 "There is no snapshot exists in Delta table '%s' that is created on or before '%s'",
@@ -118,7 +118,7 @@ public class DeltaClient
         Metadata metadata = snapshot.getMetadata();
         String format = metadata.getFormat().getProvider();
         if (!"parquet".equalsIgnoreCase(format)) {
-            throw new PrestoException(DELTA_UNSUPPORTED_DATA_FORMAT,
+            throw new TrinoException(DELTA_UNSUPPORTED_DATA_FORMAT,
                     format("Delta table %s has unsupported data format: %s. Currently only Parquet data format is supported", schemaTableName, format));
         }
 
@@ -139,7 +139,7 @@ public class DeltaClient
     {
         Optional<DeltaLog> deltaLog = loadDeltaTableLog(session, new Path(deltaTable.getTableLocation()));
         if (!deltaLog.isPresent()) {
-            throw new PrestoException(NOT_FOUND,
+            throw new TrinoException(NOT_FOUND,
                     format("Delta table (%s.%s) no longer exists.", deltaTable.getSchemaName(), deltaTable.getTableName()));
         }
 
@@ -161,13 +161,13 @@ public class DeltaClient
             return Optional.of(DeltaLog.forTable(hdfsConf, tableLocation));
         }
         catch (IOException io) {
-            throw new PrestoException(GENERIC_INTERNAL_ERROR, "Failed to load Delta table: " + io.getMessage(), io);
+            throw new TrinoException(GENERIC_INTERNAL_ERROR, "Failed to load Delta table: " + io.getMessage(), io);
         }
     }
 
     /**
      * Utility method that returns the columns in given Delta metadata. Returned columns include regular and partition types.
-     * Data type from Delta is mapped to appropriate Presto data type.
+     * Data type from Delta is mapped to appropriate Trino data type.
      */
     private List<DeltaColumn> getSchema(SchemaTableName tableName, Metadata metadata)
     {
@@ -178,10 +178,10 @@ public class DeltaClient
         return Arrays.stream(metadata.getSchema().getFields())
                 .map(field -> {
                     String columnName = field.getName().toLowerCase(Locale.US);
-                    TypeSignature prestoType = convertDeltaDataTypePrestoDataType(tableName, columnName, field.getDataType());
+                    TypeSignature trinoType = convertDeltaDataTypeTrinoDataType(tableName, columnName, field.getDataType());
                     return new DeltaColumn(
                             columnName,
-                            prestoType,
+                            trinoType,
                             field.isNullable(),
                             partitionColumns.contains(columnName));
                 }).collect(Collectors.toList());

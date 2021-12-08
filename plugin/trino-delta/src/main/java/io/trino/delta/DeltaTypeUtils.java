@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.delta;
+package io.trino.delta;
 
 import com.google.common.collect.ImmutableList;
 import io.delta.standalone.types.ArrayType;
@@ -30,15 +30,15 @@ import io.delta.standalone.types.ShortType;
 import io.delta.standalone.types.StringType;
 import io.delta.standalone.types.StructType;
 import io.delta.standalone.types.TimestampType;
-import io.prestosql.spi.PrestoException;
-import io.prestosql.spi.connector.SchemaTableName;
-import io.prestosql.spi.type.Decimals;
-import io.prestosql.spi.type.NamedTypeSignature;
-import io.prestosql.spi.type.RowFieldName;
-import io.prestosql.spi.type.StandardTypes;
-import io.prestosql.spi.type.Type;
-import io.prestosql.spi.type.TypeSignature;
-import io.prestosql.spi.type.TypeSignatureParameter;
+import io.trino.spi.TrinoException;
+import io.trino.spi.connector.SchemaTableName;
+import io.trino.spi.type.Decimals;
+import io.trino.spi.type.NamedTypeSignature;
+import io.trino.spi.type.RowFieldName;
+import io.trino.spi.type.StandardTypes;
+import io.trino.spi.type.Type;
+import io.trino.spi.type.TypeSignature;
+import io.trino.spi.type.TypeSignatureParameter;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -51,23 +51,23 @@ import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static io.airlift.slice.Slices.utf8Slice;
-import static io.prestosql.delta.DeltaErrorCode.DELTA_INVALID_PARTITION_VALUE;
-import static io.prestosql.delta.DeltaErrorCode.DELTA_UNSUPPORTED_COLUMN_TYPE;
-import static io.prestosql.spi.type.BigintType.BIGINT;
-import static io.prestosql.spi.type.BooleanType.BOOLEAN;
-import static io.prestosql.spi.type.DateType.DATE;
-import static io.prestosql.spi.type.DecimalType.createDecimalType;
-import static io.prestosql.spi.type.DoubleType.DOUBLE;
-import static io.prestosql.spi.type.IntegerType.INTEGER;
-import static io.prestosql.spi.type.RealType.REAL;
-import static io.prestosql.spi.type.SmallintType.SMALLINT;
-import static io.prestosql.spi.type.StandardTypes.ARRAY;
-import static io.prestosql.spi.type.StandardTypes.MAP;
-import static io.prestosql.spi.type.StandardTypes.ROW;
-import static io.prestosql.spi.type.TimestampType.TIMESTAMP;
-import static io.prestosql.spi.type.TinyintType.TINYINT;
-import static io.prestosql.spi.type.VarbinaryType.VARBINARY;
-import static io.prestosql.spi.type.VarcharType.createUnboundedVarcharType;
+import static io.trino.delta.DeltaErrorCode.DELTA_INVALID_PARTITION_VALUE;
+import static io.trino.delta.DeltaErrorCode.DELTA_UNSUPPORTED_COLUMN_TYPE;
+import static io.trino.spi.type.BigintType.BIGINT;
+import static io.trino.spi.type.BooleanType.BOOLEAN;
+import static io.trino.spi.type.DateType.DATE;
+import static io.trino.spi.type.DecimalType.createDecimalType;
+import static io.trino.spi.type.DoubleType.DOUBLE;
+import static io.trino.spi.type.IntegerType.INTEGER;
+import static io.trino.spi.type.RealType.REAL;
+import static io.trino.spi.type.SmallintType.SMALLINT;
+import static io.trino.spi.type.StandardTypes.ARRAY;
+import static io.trino.spi.type.StandardTypes.MAP;
+import static io.trino.spi.type.StandardTypes.ROW;
+import static io.trino.spi.type.TimestampType.TIMESTAMP;
+import static io.trino.spi.type.TinyintType.TINYINT;
+import static io.trino.spi.type.VarbinaryType.VARBINARY;
+import static io.trino.spi.type.VarcharType.createUnboundedVarcharType;
 import static java.lang.Double.parseDouble;
 import static java.lang.Float.floatToRawIntBits;
 import static java.lang.Float.parseFloat;
@@ -75,7 +75,7 @@ import static java.lang.Long.parseLong;
 import static java.lang.String.format;
 
 /**
- * Contains utility methods to convert Delta data types (and data values) to Presto data types (and data values)
+ * Contains utility methods to convert Delta data types (and data values) to Trino data types (and data values)
  */
 public class DeltaTypeUtils
 {
@@ -84,14 +84,14 @@ public class DeltaTypeUtils
     }
 
     /**
-     * Convert given Delta data type to Presto data type signature.
+     * Convert given Delta data type to Trino data type signature.
      *
      * @param tableName Used in error messages when an unsupported data type is encountered.
      * @param columnName Used in error messages when an unsupported data type is encountered.
      * @param deltaType Data type to convert
      * @return
      */
-    public static TypeSignature convertDeltaDataTypePrestoDataType(SchemaTableName tableName, String columnName, DataType deltaType)
+    public static TypeSignature convertDeltaDataTypeTrinoDataType(SchemaTableName tableName, String columnName, DataType deltaType)
     {
         checkArgument(deltaType != null);
 
@@ -101,7 +101,7 @@ public class DeltaTypeUtils
             Arrays.stream(deltaStructType.getFields())
                     .forEach(field -> {
                         String rowFieldName = field.getName().toLowerCase(Locale.US);
-                        TypeSignature rowFieldType = convertDeltaDataTypePrestoDataType(
+                        TypeSignature rowFieldType = convertDeltaDataTypeTrinoDataType(
                                 tableName,
                                 columnName + "." + field.getName(),
                                 field.getDataType());
@@ -115,7 +115,7 @@ public class DeltaTypeUtils
         }
         else if (deltaType instanceof ArrayType) {
             ArrayType deltaArrayType = (ArrayType) deltaType;
-            TypeSignature elementType = convertDeltaDataTypePrestoDataType(
+            TypeSignature elementType = convertDeltaDataTypeTrinoDataType(
                     tableName,
                     columnName,
                     deltaArrayType.getElementType());
@@ -125,14 +125,14 @@ public class DeltaTypeUtils
         }
         else if (deltaType instanceof MapType) {
             MapType deltaMapType = (MapType) deltaType;
-            TypeSignature keyType = convertDeltaDataTypePrestoDataType(tableName, columnName, deltaMapType.getKeyType());
-            TypeSignature valueType = convertDeltaDataTypePrestoDataType(tableName, columnName, deltaMapType.getValueType());
+            TypeSignature keyType = convertDeltaDataTypeTrinoDataType(tableName, columnName, deltaMapType.getKeyType());
+            TypeSignature valueType = convertDeltaDataTypeTrinoDataType(tableName, columnName, deltaMapType.getValueType());
             return new TypeSignature(MAP, ImmutableList.of(
                     TypeSignatureParameter.typeParameter(keyType),
                     TypeSignatureParameter.typeParameter(valueType)));
         }
 
-        return convertDeltaPrimitiveTypeToPrestoPrimitiveType(tableName, columnName, deltaType).getTypeSignature();
+        return convertDeltaPrimitiveTypeToTrinoPrimitiveType(tableName, columnName, deltaType).getTypeSignature();
     }
 
     public static Object convertPartitionValue(
@@ -169,18 +169,18 @@ public class DeltaTypeUtils
                 case StandardTypes.DECIMAL:
                     return Decimals.parse(partitionValue).getObject();
                 default:
-                    throw new PrestoException(DELTA_UNSUPPORTED_COLUMN_TYPE,
+                    throw new TrinoException(DELTA_UNSUPPORTED_COLUMN_TYPE,
                             format("Unsupported data type '%s' for partition column %s", partitionDataType, partitionColumnName));
             }
         }
         catch (IllegalArgumentException | DateTimeParseException e) {
-            throw new PrestoException(DELTA_INVALID_PARTITION_VALUE,
+            throw new TrinoException(DELTA_INVALID_PARTITION_VALUE,
                     format("Can not parse partition value '%s' of type '%s' for partition column '%s'",
                             partitionValue, partitionDataType, partitionColumnName));
         }
     }
 
-    private static Type convertDeltaPrimitiveTypeToPrestoPrimitiveType(SchemaTableName tableName, String columnName, DataType deltaType)
+    private static Type convertDeltaPrimitiveTypeToTrinoPrimitiveType(SchemaTableName tableName, String columnName, DataType deltaType)
     {
         if (deltaType instanceof BinaryType) {
             return VARBINARY;
@@ -220,7 +220,7 @@ public class DeltaTypeUtils
             return TIMESTAMP;
         }
 
-        throw new PrestoException(DELTA_UNSUPPORTED_COLUMN_TYPE,
+        throw new TrinoException(DELTA_UNSUPPORTED_COLUMN_TYPE,
                 format("Column '%s' in Delta table %s contains unsupported data type: %s",
                         columnName,
                         tableName,

@@ -11,42 +11,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.delta;
+package io.trino.delta;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.prestosql.Session;
-import io.prestosql.cost.PlanNodeStatsEstimate;
-import io.prestosql.cost.StatsProvider;
-import io.prestosql.execution.warnings.WarningCollector;
-import io.prestosql.metadata.Metadata;
-import io.prestosql.spi.predicate.Domain;
-import io.prestosql.spi.predicate.Range;
-import io.prestosql.spi.predicate.SortedRangeSet;
-import io.prestosql.sql.planner.Plan;
-import io.prestosql.sql.planner.assertions.MatchResult;
-import io.prestosql.sql.planner.assertions.Matcher;
-import io.prestosql.sql.planner.assertions.PlanMatchPattern;
-import io.prestosql.sql.planner.assertions.SymbolAliases;
-import io.prestosql.sql.planner.plan.PlanNode;
-import io.prestosql.sql.planner.plan.TableScanNode;
+import io.trino.Session;
+import io.trino.cost.PlanNodeStatsEstimate;
+import io.trino.cost.StatsProvider;
+import io.trino.execution.warnings.WarningCollector;
+import io.trino.metadata.Metadata;
+import io.trino.spi.predicate.Domain;
+import io.trino.spi.predicate.Range;
+import io.trino.spi.predicate.SortedRangeSet;
+import io.trino.sql.planner.Plan;
+import io.trino.sql.planner.assertions.MatchResult;
+import io.trino.sql.planner.assertions.Matcher;
+import io.trino.sql.planner.assertions.PlanMatchPattern;
+import io.trino.sql.planner.assertions.SymbolAliases;
+import io.trino.sql.planner.plan.PlanNode;
+import io.trino.sql.planner.plan.TableScanNode;
 import org.testng.annotations.Test;
 
 import java.util.Collections;
 import java.util.Map;
 
 import static io.airlift.slice.Slices.utf8Slice;
-import static io.prestosql.spi.predicate.Domain.multipleValues;
-import static io.prestosql.spi.predicate.Domain.notNull;
-import static io.prestosql.spi.predicate.Domain.onlyNull;
-import static io.prestosql.spi.predicate.Domain.singleValue;
-import static io.prestosql.spi.type.IntegerType.INTEGER;
-import static io.prestosql.spi.type.VarcharType.VARCHAR;
-import static io.prestosql.sql.planner.assertions.MatchResult.NO_MATCH;
-import static io.prestosql.sql.planner.assertions.MatchResult.match;
-import static io.prestosql.sql.planner.assertions.PlanAssert.assertPlan;
-import static io.prestosql.sql.planner.assertions.PlanMatchPattern.anyTree;
-import static io.prestosql.transaction.TransactionBuilder.transaction;
+import static io.trino.spi.predicate.Domain.multipleValues;
+import static io.trino.spi.predicate.Domain.notNull;
+import static io.trino.spi.predicate.Domain.onlyNull;
+import static io.trino.spi.predicate.Domain.singleValue;
+import static io.trino.spi.type.IntegerType.INTEGER;
+import static io.trino.spi.type.VarcharType.VARCHAR;
+import static io.trino.sql.planner.assertions.MatchResult.NO_MATCH;
+import static io.trino.sql.planner.assertions.MatchResult.match;
+import static io.trino.sql.planner.assertions.PlanAssert.assertPlan;
+import static io.trino.sql.planner.assertions.PlanMatchPattern.anyTree;
+import static io.trino.transaction.TransactionBuilder.transaction;
 import static java.lang.String.format;
 
 /**

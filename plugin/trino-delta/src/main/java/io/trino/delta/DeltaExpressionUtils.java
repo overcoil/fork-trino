@@ -11,20 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.delta;
+package io.trino.delta;
 
 import com.google.common.collect.ImmutableList;
 import io.airlift.slice.Slice;
 import io.delta.standalone.actions.AddFile;
-import io.prestosql.spi.PrestoException;
-import io.prestosql.spi.connector.ColumnHandle;
-import io.prestosql.spi.connector.ConnectorSession;
-import io.prestosql.spi.predicate.Domain;
-import io.prestosql.spi.predicate.TupleDomain;
-import io.prestosql.spi.predicate.ValueSet;
-import io.prestosql.spi.type.StandardTypes;
-import io.prestosql.spi.type.Type;
-import io.prestosql.spi.type.TypeManager;
+import io.trino.spi.TrinoException;
+import io.trino.spi.connector.ColumnHandle;
+import io.trino.spi.connector.ConnectorSession;
+import io.trino.spi.predicate.Domain;
+import io.trino.spi.predicate.TupleDomain;
+import io.trino.spi.predicate.ValueSet;
+import io.trino.spi.type.StandardTypes;
+import io.trino.spi.type.Type;
+import io.trino.spi.type.TypeManager;
 
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -39,10 +39,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static io.airlift.slice.Slices.utf8Slice;
-import static io.prestosql.delta.DeltaColumnHandle.ColumnType.PARTITION;
-import static io.prestosql.delta.DeltaErrorCode.DELTA_INVALID_PARTITION_VALUE;
-import static io.prestosql.delta.DeltaErrorCode.DELTA_UNSUPPORTED_COLUMN_TYPE;
-import static io.prestosql.delta.DeltaSessionProperties.isPartitionPruningEnabled;
+import static io.trino.delta.DeltaColumnHandle.ColumnType.PARTITION;
+import static io.trino.delta.DeltaErrorCode.DELTA_INVALID_PARTITION_VALUE;
+import static io.trino.delta.DeltaErrorCode.DELTA_UNSUPPORTED_COLUMN_TYPE;
+import static io.trino.delta.DeltaSessionProperties.isPartitionPruningEnabled;
 import static java.lang.Double.doubleToRawLongBits;
 import static java.lang.Double.parseDouble;
 import static java.lang.Float.floatToRawIntBits;
@@ -230,12 +230,12 @@ public class DeltaExpressionUtils
                     Boolean booleanValue = Boolean.valueOf(partitionValue);
                     return Domain.create(ValueSet.of(type, booleanValue), false);
                 default:
-                    throw new PrestoException(DELTA_UNSUPPORTED_COLUMN_TYPE,
+                    throw new TrinoException(DELTA_UNSUPPORTED_COLUMN_TYPE,
                             format("Unsupported data type '%s' for partition column %s", columnHandle.getDataType(), columnHandle.getName()));
             }
         }
         catch (IllegalArgumentException e) {
-            throw new PrestoException(DELTA_INVALID_PARTITION_VALUE,
+            throw new TrinoException(DELTA_INVALID_PARTITION_VALUE,
                     format("Can not parse partition value '%s' of type '%s' for partition column '%s' in file '%s'",
                             partitionValue, columnHandle.getDataType(), columnHandle.getName(), filePath));
         }

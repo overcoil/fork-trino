@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.delta;
+package io.trino.delta;
 
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
@@ -19,18 +19,18 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
-import io.prestosql.plugin.base.CatalogName;
-import io.prestosql.plugin.hive.DynamicConfigurationProvider;
-import io.prestosql.plugin.hive.FileFormatDataSourceStats;
-import io.prestosql.plugin.hive.HdfsConfiguration;
-import io.prestosql.plugin.hive.HdfsConfigurationInitializer;
-import io.prestosql.plugin.hive.HdfsEnvironment;
-import io.prestosql.plugin.hive.HiveConfig;
-import io.prestosql.plugin.hive.HiveHdfsConfiguration;
-import io.prestosql.plugin.hive.metastore.MetastoreConfig;
-import io.prestosql.spi.type.Type;
-import io.prestosql.spi.type.TypeId;
-import io.prestosql.spi.type.TypeManager;
+import io.trino.plugin.base.CatalogName;
+import io.trino.plugin.hive.DynamicConfigurationProvider;
+import io.trino.plugin.hive.FileFormatDataSourceStats;
+import io.trino.plugin.hive.HdfsConfiguration;
+import io.trino.plugin.hive.HdfsConfigurationInitializer;
+import io.trino.plugin.hive.HdfsEnvironment;
+import io.trino.plugin.hive.HiveConfig;
+import io.trino.plugin.hive.HiveHdfsConfiguration;
+import io.trino.plugin.hive.metastore.MetastoreConfig;
+import io.trino.spi.type.Type;
+import io.trino.spi.type.TypeId;
+import io.trino.spi.type.TypeManager;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

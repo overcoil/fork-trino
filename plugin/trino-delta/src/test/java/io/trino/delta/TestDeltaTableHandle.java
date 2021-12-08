@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.delta;
+package io.trino.delta;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -22,20 +22,20 @@ import io.airlift.bootstrap.Bootstrap;
 import io.airlift.json.JsonBinder;
 import io.airlift.json.JsonCodec;
 import io.airlift.json.JsonModule;
-import io.prestosql.block.BlockJsonSerde;
-import io.prestosql.metadata.HandleJsonModule;
-import io.prestosql.metadata.HandleResolver;
-import io.prestosql.spi.block.Block;
-import io.prestosql.spi.block.TestingBlockEncodingSerde;
-import io.prestosql.spi.predicate.Domain;
-import io.prestosql.spi.predicate.Range;
-import io.prestosql.spi.predicate.SortedRangeSet;
-import io.prestosql.spi.predicate.TupleDomain;
-import io.prestosql.spi.type.TestingTypeDeserializer;
-import io.prestosql.spi.type.TestingTypeManager;
-import io.prestosql.spi.type.Type;
-import io.prestosql.spi.type.TypeSignature;
-import io.prestosql.type.TypeSignatureDeserializer;
+import io.trino.block.BlockJsonSerde;
+import io.trino.metadata.HandleJsonModule;
+import io.trino.metadata.HandleResolver;
+import io.trino.spi.block.Block;
+import io.trino.spi.block.TestingBlockEncodingSerde;
+import io.trino.spi.predicate.Domain;
+import io.trino.spi.predicate.Range;
+import io.trino.spi.predicate.SortedRangeSet;
+import io.trino.spi.predicate.TupleDomain;
+import io.trino.spi.type.TestingTypeDeserializer;
+import io.trino.spi.type.TestingTypeManager;
+import io.trino.spi.type.Type;
+import io.trino.spi.type.TypeSignature;
+import io.trino.type.TypeSignatureDeserializer;
 import org.testng.annotations.Test;
 
 import java.util.List;
@@ -43,12 +43,12 @@ import java.util.Optional;
 
 import static io.airlift.json.JsonBinder.jsonBinder;
 import static io.airlift.json.JsonCodecBinder.jsonCodecBinder;
-import static io.prestosql.delta.DeltaColumnHandle.ColumnType.PARTITION;
-import static io.prestosql.delta.DeltaColumnHandle.ColumnType.REGULAR;
-import static io.prestosql.spi.type.DateType.DATE;
-import static io.prestosql.spi.type.DoubleType.DOUBLE;
-import static io.prestosql.spi.type.IntegerType.INTEGER;
-import static io.prestosql.spi.type.RealType.REAL;
+import static io.trino.delta.DeltaColumnHandle.ColumnType.PARTITION;
+import static io.trino.delta.DeltaColumnHandle.ColumnType.REGULAR;
+import static io.trino.spi.type.DateType.DATE;
+import static io.trino.spi.type.DoubleType.DOUBLE;
+import static io.trino.spi.type.IntegerType.INTEGER;
+import static io.trino.spi.type.RealType.REAL;
 import static org.testng.Assert.assertEquals;
 
 /**

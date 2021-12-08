@@ -11,24 +11,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.delta;
+package io.trino.delta;
 
 import com.google.inject.Injector;
 import io.airlift.bootstrap.Bootstrap;
 import io.airlift.json.JsonModule;
-import io.prestosql.plugin.base.CatalogName;
-import io.prestosql.plugin.hive.HiveHdfsModule;
-import io.prestosql.plugin.hive.NodeVersion;
-import io.prestosql.plugin.hive.authentication.HiveAuthenticationModule;
-import io.prestosql.plugin.hive.azure.HiveAzureModule;
-import io.prestosql.plugin.hive.gcs.HiveGcsModule;
-import io.prestosql.plugin.hive.metastore.HiveMetastoreModule;
-import io.prestosql.plugin.hive.s3.HiveS3Module;
-import io.prestosql.spi.NodeManager;
-import io.prestosql.spi.connector.Connector;
-import io.prestosql.spi.connector.ConnectorContext;
-import io.prestosql.spi.connector.ConnectorFactory;
-import io.prestosql.spi.connector.ConnectorHandleResolver;
+import io.trino.plugin.base.CatalogName;
+import io.trino.plugin.hive.HiveHdfsModule;
+import io.trino.plugin.hive.NodeVersion;
+import io.trino.plugin.hive.authentication.HiveAuthenticationModule;
+import io.trino.plugin.hive.azure.HiveAzureModule;
+import io.trino.plugin.hive.gcs.HiveGcsModule;
+import io.trino.plugin.hive.metastore.HiveMetastoreModule;
+import io.trino.plugin.hive.s3.HiveS3Module;
+import io.trino.spi.NodeManager;
+import io.trino.spi.connector.Connector;
+import io.trino.spi.connector.ConnectorContext;
+import io.trino.spi.connector.ConnectorFactory;
+import io.trino.spi.connector.ConnectorHandleResolver;
 
 import java.util.Map;
 import java.util.Optional;

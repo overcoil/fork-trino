@@ -11,9 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.delta;
+package io.trino.delta;
 
-import io.prestosql.spi.PrestoException;
+import io.trino.spi.TrinoException;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static io.prestosql.spi.StandardErrorCode.NOT_SUPPORTED;
+import static io.trino.spi.StandardErrorCode.NOT_SUPPORTED;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
@@ -102,7 +102,7 @@ public class DeltaTableName
     {
         Matcher match = TABLE_PATTERN.matcher(tableName);
         if (!match.matches()) {
-            throw new PrestoException(NOT_SUPPORTED, "Invalid Delta table name: " + tableName +
+            throw new TrinoException(NOT_SUPPORTED, "Invalid Delta table name: " + tableName +
                     ", Expected table name form 'tableName[@v<snapshotId>][@t<snapshotAsOfTimestamp>]'. " +
                     "The table can have either a particular snapshot identifier or a timestamp of the snapshot. " +
                     "If timestamp is given the latest snapshot of the table that was generated at or " +
@@ -126,14 +126,14 @@ public class DeltaTableName
                                 .toEpochMilli());
             }
             catch (IllegalArgumentException | DateTimeParseException ex) {
-                throw new PrestoException(NOT_SUPPORTED,
+                throw new TrinoException(NOT_SUPPORTED,
                         format("Invalid Delta table name: %s, given snapshot timestamp (%s) format is not valid. " +
                                 "Expected timestamp format 'YYYY-MM-DD HH:mm:ss'", tableName, timestampValue));
             }
         }
 
         if (snapshot.isPresent() && timestampMillisUtc.isPresent()) {
-            throw new PrestoException(NOT_SUPPORTED, "Invalid Delta table name: " + tableName +
+            throw new TrinoException(NOT_SUPPORTED, "Invalid Delta table name: " + tableName +
                     ", Table suffix contains both snapshot id and timestamp of snapshot to read. " +
                     "Only one of them is supported.");
         }

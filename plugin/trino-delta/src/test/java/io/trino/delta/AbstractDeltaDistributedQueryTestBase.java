@@ -11,22 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.prestosql.delta;
+package io.trino.delta;
 
 import com.google.common.collect.ImmutableMap;
-import io.prestosql.Session;
-import io.prestosql.plugin.hive.HiveHadoop2Plugin;
-import io.prestosql.plugin.tpch.TpchPlugin;
-import io.prestosql.spi.type.TimeZoneKey;
-import io.prestosql.testing.AbstractTestQueryFramework;
-import io.prestosql.testing.DistributedQueryRunner;
-import io.prestosql.testing.QueryRunner;
+import io.trino.Session;
+import io.trino.plugin.hive.HivePlugin;
+import io.trino.plugin.tpch.TpchPlugin;
+import io.trino.spi.type.TimeZoneKey;
+import io.trino.testing.AbstractTestQueryFramework;
+import io.trino.testing.DistributedQueryRunner;
+import io.trino.testing.QueryRunner;
 
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Map;
 
-import static io.prestosql.testing.TestingSession.testSessionBuilder;
+import static io.trino.testing.TestingSession.testSessionBuilder;
 import static java.lang.String.format;
 
 public abstract class AbstractDeltaDistributedQueryTestBase
@@ -113,13 +113,14 @@ public abstract class AbstractDeltaDistributedQueryTestBase
         // Install a Hive connector catalog that uses the same metastore as Delta
         // This catalog will be used to create tables in metastore as the Delta connector doesn't
         // support creating tables yet.
-        queryRunner.installPlugin(new HiveHadoop2Plugin());
+        queryRunner.installPlugin(new HivePlugin());
         Map<String, String> hiveProperties = ImmutableMap.<String, String>builder()
                 .put("hive.metastore", "file")
                 .put("hive.metastore.catalog.dir", catalogDir.toFile().toURI().toString())
                 .put("hive.allow-drop-table", "true")
                 .put("hive.security", "legacy")
                 .build();
+        // TODO: does the follow need to adjust?
         queryRunner.createCatalog(HIVE_CATALOG, "hive-hadoop2", hiveProperties);
         queryRunner.execute(format("CREATE SCHEMA %s.%s", HIVE_CATALOG, DELTA_SCHEMA));
 

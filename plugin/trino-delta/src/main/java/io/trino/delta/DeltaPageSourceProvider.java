@@ -12,37 +12,40 @@
  * limitations under the License.
  */
 
-package io.prestosql.delta;
+package io.trino.delta;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.prestosql.memory.context.AggregatedMemoryContext;
-import io.prestosql.parquet.Field;
-import io.prestosql.parquet.ParquetCorruptionException;
-import io.prestosql.parquet.ParquetDataSource;
-import io.prestosql.parquet.ParquetReaderOptions;
-import io.prestosql.parquet.RichColumnDescriptor;
-import io.prestosql.parquet.predicate.Predicate;
-import io.prestosql.parquet.reader.MetadataReader;
-import io.prestosql.parquet.reader.ParquetReader;
-import io.prestosql.plugin.hive.FileFormatDataSourceStats;
-import io.prestosql.plugin.hive.HdfsEnvironment;
-import io.prestosql.plugin.hive.HdfsEnvironment.HdfsContext;
-import io.prestosql.plugin.hive.parquet.ParquetPageSource;
-import io.prestosql.spi.PrestoException;
-import io.prestosql.spi.block.Block;
-import io.prestosql.spi.connector.ColumnHandle;
-import io.prestosql.spi.connector.ConnectorPageSource;
-import io.prestosql.spi.connector.ConnectorPageSourceProvider;
-import io.prestosql.spi.connector.ConnectorSession;
-import io.prestosql.spi.connector.ConnectorSplit;
-import io.prestosql.spi.connector.ConnectorTableHandle;
-import io.prestosql.spi.connector.ConnectorTransactionHandle;
-import io.prestosql.spi.predicate.Domain;
-import io.prestosql.spi.predicate.TupleDomain;
-import io.prestosql.spi.predicate.Utils;
-import io.prestosql.spi.type.Type;
-import io.prestosql.spi.type.TypeManager;
+import io.trino.memory.context.AggregatedMemoryContext;
+import io.trino.parquet.Field;
+import io.trino.parquet.ParquetCorruptionException;
+import io.trino.parquet.ParquetDataSource;
+import io.trino.parquet.ParquetDataSourceId;
+import io.trino.parquet.ParquetReaderOptions;
+import io.trino.parquet.RichColumnDescriptor;
+import io.trino.parquet.predicate.Predicate;
+import io.trino.parquet.reader.MetadataReader;
+import io.trino.parquet.reader.ParquetReader;
+import io.trino.plugin.hive.FileFormatDataSourceStats;
+import io.trino.plugin.hive.HdfsEnvironment;
+import io.trino.plugin.hive.HdfsEnvironment.HdfsContext;
+import io.trino.plugin.hive.parquet.HdfsParquetDataSource;
+import io.trino.plugin.hive.parquet.ParquetPageSource;
+import io.trino.spi.TrinoException;
+import io.trino.spi.block.Block;
+import io.trino.spi.connector.ColumnHandle;
+import io.trino.spi.connector.ConnectorPageSource;
+import io.trino.spi.connector.ConnectorPageSourceProvider;
+import io.trino.spi.connector.ConnectorSession;
+import io.trino.spi.connector.ConnectorSplit;
+import io.trino.spi.connector.ConnectorTableHandle;
+import io.trino.spi.connector.ConnectorTransactionHandle;
+import io.trino.spi.connector.DynamicFilter;
+import io.trino.spi.predicate.Domain;
+import io.trino.spi.predicate.TupleDomain;
+import io.trino.spi.predicate.Utils;
+import io.trino.spi.type.Type;
+import io.trino.spi.type.TypeManager;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
@@ -65,26 +68,26 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.nullToEmpty;
-import static io.prestosql.delta.DeltaColumnHandle.ColumnType.PARTITION;
-import static io.prestosql.delta.DeltaColumnHandle.ColumnType.REGULAR;
-import static io.prestosql.delta.DeltaColumnHandle.ColumnType.SUBFIELD;
-import static io.prestosql.delta.DeltaErrorCode.DELTA_BAD_DATA;
-import static io.prestosql.delta.DeltaErrorCode.DELTA_CANNOT_OPEN_SPLIT;
-import static io.prestosql.delta.DeltaErrorCode.DELTA_MISSING_DATA;
-import static io.prestosql.delta.DeltaTypeUtils.convertPartitionValue;
-import static io.prestosql.memory.context.AggregatedMemoryContext.newSimpleAggregatedMemoryContext;
-import static io.prestosql.parquet.ParquetTypeUtils.getColumnIO;
-import static io.prestosql.parquet.ParquetTypeUtils.getDescriptors;
-import static io.prestosql.parquet.ParquetTypeUtils.getParquetTypeByName;
-import static io.prestosql.parquet.ParquetTypeUtils.lookupColumnByName;
-import static io.prestosql.parquet.predicate.PredicateUtils.buildPredicate;
-import static io.prestosql.parquet.predicate.PredicateUtils.predicateMatches;
-import static io.prestosql.plugin.hive.parquet.HdfsParquetDataSource.buildHdfsParquetDataSource;
-import static io.prestosql.plugin.hive.parquet.ParquetColumnIOConverter.constructField;
-import static io.prestosql.spi.StandardErrorCode.PERMISSION_DENIED;
+import static io.trino.delta.DeltaColumnHandle.ColumnType.PARTITION;
+import static io.trino.delta.DeltaColumnHandle.ColumnType.REGULAR;
+import static io.trino.delta.DeltaColumnHandle.ColumnType.SUBFIELD;
+import static io.trino.delta.DeltaErrorCode.DELTA_BAD_DATA;
+import static io.trino.delta.DeltaErrorCode.DELTA_CANNOT_OPEN_SPLIT;
+import static io.trino.delta.DeltaErrorCode.DELTA_MISSING_DATA;
+import static io.trino.delta.DeltaTypeUtils.convertPartitionValue;
+import static io.trino.memory.context.AggregatedMemoryContext.newSimpleAggregatedMemoryContext;
+import static io.trino.parquet.ParquetTypeUtils.getColumnIO;
+import static io.trino.parquet.ParquetTypeUtils.getDescriptors;
+import static io.trino.parquet.ParquetTypeUtils.getParquetTypeByName;
+import static io.trino.parquet.ParquetTypeUtils.lookupColumnByName;
+import static io.trino.parquet.predicate.PredicateUtils.buildPredicate;
+import static io.trino.parquet.predicate.PredicateUtils.predicateMatches;
+import static io.trino.plugin.hive.parquet.ParquetColumnIOConverter.constructField;
+import static io.trino.spi.StandardErrorCode.PERMISSION_DENIED;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
+import static org.joda.time.DateTimeZone.UTC;
 
 public class DeltaPageSourceProvider
         implements ConnectorPageSourceProvider
@@ -111,7 +114,7 @@ public class DeltaPageSourceProvider
             ConnectorSplit split,
             ConnectorTableHandle table,
             List<ColumnHandle> columns,
-            TupleDomain<ColumnHandle> dynamicFilter)
+            DynamicFilter dynamicFilter)
     {
         DeltaSplit deltaSplit = (DeltaSplit) split;
         DeltaTableHandle deltaTableHandle = (DeltaTableHandle) table;
@@ -186,8 +189,9 @@ public class DeltaPageSourceProvider
                     .getFileSystem(user, path, configuration)
                     .open(path);
             ParquetReaderOptions readerOptions = new ParquetReaderOptions();
-            dataSource = buildHdfsParquetDataSource(inputStream, path, fileSize, stats, readerOptions);
-            ParquetMetadata parquetMetadata = MetadataReader.readFooter(inputStream, path, fileSize);
+            dataSource = new HdfsParquetDataSource(new ParquetDataSourceId(path.toString()), fileSize, inputStream, stats, readerOptions);
+
+            ParquetMetadata parquetMetadata = MetadataReader.readFooter(dataSource);
 
             FileMetaData fileMetaData = parquetMetadata.getFileMetaData();
             MessageType fileSchema = fileMetaData.getSchema();
@@ -213,7 +217,7 @@ public class DeltaPageSourceProvider
 
             Map<List<String>, RichColumnDescriptor> descriptorsByPath = getDescriptors(fileSchema, requestedSchema);
             TupleDomain<ColumnDescriptor> parquetTupleDomain = getParquetTupleDomain(descriptorsByPath, effectivePredicate);
-            Predicate parquetPredicate = buildPredicate(requestedSchema, parquetTupleDomain, descriptorsByPath);
+            Predicate parquetPredicate = buildPredicate(requestedSchema, parquetTupleDomain, descriptorsByPath, UTC);
             final ParquetDataSource finalDataSource = dataSource;
             ImmutableList.Builder<BlockMetaData> blocks = ImmutableList.builder();
             for (BlockMetaData block : footerBlocks.build()) {
@@ -222,8 +226,7 @@ public class DeltaPageSourceProvider
                         block,
                         finalDataSource,
                         descriptorsByPath,
-                        parquetTupleDomain,
-                        readerOptions.isFailOnCorruptedStatistics())) {
+                        parquetTupleDomain)) {
                     blocks.add(block);
                 }
             }
@@ -232,7 +235,9 @@ public class DeltaPageSourceProvider
                     Optional.ofNullable(fileMetaData.getCreatedBy()),
                     messageColumnIO,
                     blocks.build(),
+                    Optional.empty(),
                     dataSource,
+                    UTC,
                     systemMemoryContext,
                     readerOptions);
 
@@ -270,23 +275,23 @@ public class DeltaPageSourceProvider
             }
             catch (IOException ignored) {
             }
-            if (e instanceof PrestoException) {
-                throw (PrestoException) e;
+            if (e instanceof TrinoException) {
+                throw (TrinoException) e;
             }
             if (e instanceof ParquetCorruptionException) {
-                throw new PrestoException(DELTA_BAD_DATA, e);
+                throw new TrinoException(DELTA_BAD_DATA, e);
             }
             if (e instanceof AccessControlException) {
-                throw new PrestoException(PERMISSION_DENIED, e.getMessage(), e);
+                throw new TrinoException(PERMISSION_DENIED, e.getMessage(), e);
             }
             if (nullToEmpty(e.getMessage()).trim().equals("Filesystem closed") || e instanceof FileNotFoundException) {
-                throw new PrestoException(DELTA_CANNOT_OPEN_SPLIT, e);
+                throw new TrinoException(DELTA_CANNOT_OPEN_SPLIT, e);
             }
             String message = format("Error opening Hive split %s (offset=%s, length=%s): %s", path, start, length, e.getMessage());
             if (e.getClass().getSimpleName().equals("BlockMissingException")) {
-                throw new PrestoException(DELTA_MISSING_DATA, message, e);
+                throw new TrinoException(DELTA_MISSING_DATA, message, e);
             }
-            throw new PrestoException(DELTA_CANNOT_OPEN_SPLIT, message, e);
+            throw new TrinoException(DELTA_CANNOT_OPEN_SPLIT, message, e);
         }
     }
 
